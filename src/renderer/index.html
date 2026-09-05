@@ -1,0 +1,38 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ComGu Qwen</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="shell">
+    <header><div><h1>ComGu Qwen</h1><p>Local MCP tools for Qwen Studio</p></div><span class="pill">StreamableHTTP</span></header>
+    <section class="card">
+      <h2>MCP endpoint</h2>
+      <div class="endpoint"><code id="endpoint">Starting…</code><button id="copyEndpoint">Copy</button></div>
+      <p class="hint">Qwen Studio: Name <b>ComGu Qwen</b> · Type <b>StreamableHTTP</b> · paste this URL.</p>
+    </section>
+    <section class="card">
+      <div class="section-head"><div><h2>Workspace</h2><p class="hint">Tools can access only the selected approved folder.</p></div><button id="addRoot">Add folder</button></div>
+      <div id="roots" class="roots"></div>
+      <p id="noRoots" class="empty">No approved folders yet. File and command tools fail closed until you add and select one.</p>
+    </section>
+    <section class="card">
+      <h2>Permissions</h2>
+      <div class="permissions">
+        <label><span><b>Look at files</b><small>Read files, images and folder metadata</small></span><input type="checkbox" data-group="look" /></label>
+        <label><span><b>Change files</b><small>Create, edit, move and delete files</small></span><input type="checkbox" data-group="change" /></label>
+        <label><span><b>See and use the desktop</b><small>Windows screen, UI Automation, mouse, keyboard and clipboard</small></span><input type="checkbox" data-group="desktop" /></label>
+        <label><span><b>Run programs</b><small>Run commands inside the selected workspace sandbox</small></span><input type="checkbox" data-group="run" /></label>
+      </div>
+    </section>
+    <section class="card">
+      <h2>Recent activity</h2>
+      <pre id="activity">No activity yet.</pre>
+    </section>
+  </main>
+  <script type="module" src="./main.ts"></script>
+</body>
+</html>

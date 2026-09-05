@@ -1,0 +1,46 @@
+{
+  "name": "comgu-qwen",
+  "version": "0.1.0",
+  "description": "ComGu Qwen: local MCP tools for Qwen Studio.",
+  "license": "MIT",
+  "author": "ComGu Qwen",
+  "homepage": "https://github.com/Tanaboonnnnn/ComGu-qwen",
+  "main": "out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "verify": "npm run typecheck && vitest run --maxWorkers=2",
+    "verify:ci": "npm run typecheck && vitest run --maxWorkers=2",
+    "verify:privacy": "node scripts/verify-public-history.mjs",
+    "hooks:install": "node scripts/install-git-hooks.mjs",
+    "icon": "node scripts/make-icon.mjs",
+    "rg": "node scripts/fetch-ripgrep.mjs",
+    "dist": "npm run build && electron-builder --win nsis --x64",
+    "dist:x64": "npm run build && electron-builder --win nsis --x64",
+    "test:kill": "node scripts/kill-stray-vitest.mjs"
+  },
+  "dependencies": {
+    "@microsoft/mxc-sdk": "0.8.0",
+    "@modelcontextprotocol/node": "^2.0.0",
+    "@modelcontextprotocol/server": "^2.0.0",
+    "node-pty": "1.2.0-beta.15",
+    "sharp": "0.35.3",
+    "tree-sitter": "0.25.1",
+    "tree-sitter-bash": "0.25.1",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/jsdom": "^30.0.0",
+    "@types/node": "^22.15.0",
+    "electron": "43.4.1",
+    "electron-builder": "^26.15.7",
+    "electron-vite": "^5.0.0",
+    "jsdom": "^30.0.1",
+    "typescript": "^7.0.2",
+    "vite": "^7.3.6",
+    "vitest": "^4.1.10"
+  }
+}

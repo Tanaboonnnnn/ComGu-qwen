@@ -1,0 +1,37 @@
+﻿appId: com.comgu.qwen
+productName: ComGu Qwen
+copyright: MIT licensed
+
+directories:
+  output: release
+
+files:
+  - out/**
+  - package.json
+
+npmRebuild: false
+
+asarUnpack:
+  - '**/node_modules/node-pty/**'
+  - '**/node_modules/@microsoft/mxc-sdk/**'
+  - '**/node_modules/sharp/**'
+  - '**/node_modules/@img/**'
+  - '**/node_modules/tree-sitter/**'
+  - '**/node_modules/tree-sitter-bash/**'
+
+compression: maximum
+
+win:
+  target: nsis
+  requestedExecutionLevel: asInvoker
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: ComGu Qwen
+  artifactName: ComGu-Qwen-Setup-${arch}.${ext}
+  uninstallDisplayName: ComGu Qwen
+  deleteAppDataOnUninstall: false
