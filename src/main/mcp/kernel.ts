@@ -120,6 +120,8 @@ export interface ToolContext {
    * ever added to. Defaults to the live answer when the caller does not track it.
    */
   exposedFind?: boolean;
+  /** Non-ChatGPT surface whose ctx.roots are already the complete user-approved authority. */
+  directRoots?: boolean;
   /** Optional caller-owned command sandbox authority for non-ChatGPT MCP surfaces. */
   terminalSandbox?: (roots: readonly Root[]) => Readonly<{
     roots: readonly string[];
@@ -708,6 +710,9 @@ export async function resolveIn(
 
 /** Effective filesystem authority for the call currently running. */
 export function effectiveRootsForCall(_ctx: ToolContext): readonly Root[] {
+  // ComGu Qwen has no chat identity. Its ctx.roots are rebuilt from the folders the user
+  // explicitly enabled, so they are already the complete authority for this call.
+  if (_ctx.directRoots) return _ctx.roots;
   const caller = currentCall()?.caller;
   if (!caller?.conversationId) {
     if (swarmRunning()) {

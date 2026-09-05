@@ -12,7 +12,7 @@ import { qwenTerminalSandbox } from './command-authority.js';
 
 const QWEN_INSTRUCTIONS = [
   'Local ComGu tools for Qwen Studio.',
-  'Use only approved workspace roots and the permissions enabled in the desktop app.',
+  'Use only folders enabled in the ComGu Qwen desktop app and the permissions enabled there.',
   'This endpoint has no chat session, Prime, Worker, Sub-agent or swarm features.',
   'Use activity to inspect recent local tool activity when needed.'
 ].join(' ');
@@ -23,6 +23,7 @@ export function qwenToolContext(ctx: ToolContext): ToolContext {
     caps: { ...ctx.caps, search: false },
     exposedCaps: { ...(ctx.exposedCaps ?? ctx.caps), search: false },
     exposedFind: false,
+    directRoots: true,
     sessionTools: false,
     agentTools: false,
     exposedSessionTools: false,

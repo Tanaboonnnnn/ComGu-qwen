@@ -13,15 +13,24 @@ function render(state: QwenUiState): void {
   noRoots.hidden = state.roots.length > 0;
   for (const root of state.roots) {
     const row = document.createElement('div');
-    row.className = `root ${state.selectedRoot === root.name ? 'selected' : ''}`;
-    const choose = document.createElement('button');
-    choose.className = 'root-main';
-    choose.textContent = `/${root.name}  —  ${root.path}`;
-    choose.addEventListener('click', () => void window.comguQwen.selectRoot(root.name).then(render));
+    row.className = 'root';
+
+    const access = document.createElement('label');
+    access.className = 'root-access';
+    const enabled = document.createElement('input');
+    enabled.type = 'checkbox';
+    enabled.checked = state.enabledRoots.includes(root.name);
+    enabled.setAttribute('aria-label', `Allow Qwen to use ${root.name}`);
+    enabled.addEventListener('change', () => void window.comguQwen.setRootEnabled(root.name, enabled.checked).then(render));
+    const text = document.createElement('span');
+    text.className = 'root-text';
+    text.textContent = `/${root.name}  —  ${root.path}`;
+    access.append(enabled, text);
+
     const remove = document.createElement('button');
     remove.textContent = 'Remove';
     remove.addEventListener('click', () => void window.comguQwen.removeRoot(root.name).then(render));
-    row.append(choose, remove);
+    row.append(access, remove);
     roots.append(row);
   }
   for (const input of document.querySelectorAll<HTMLInputElement>('input[data-group]')) {

@@ -3,18 +3,18 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { defaultConfig, initConfigPath, saveConfig } from '../src/main/config.js';
-import { resetChatWorkspaceScopesForTests, setManualWorkspaceScope } from '../src/main/chat-workspace-scope.js';
+import { resetChatWorkspaceScopesForTests } from '../src/main/chat-workspace-scope.js';
 import { validateNewRoot } from '../src/main/sandbox.js';
 import { startQwenLocalService, stopQwenLocalService } from '../src/main/qwen/lifecycle.js';
 import { readRecentQwenActivity } from '../src/main/qwen/activity.js';
 
-let dir = '';
+let dirs: string[] = [];
 
 afterEach(async () => {
   await stopQwenLocalService().catch(() => undefined);
   resetChatWorkspaceScopesForTests();
-  if (dir) await fs.rm(dir, { recursive: true, force: true });
-  dir = '';
+  for (const dir of dirs) await fs.rm(dir, { recursive: true, force: true });
+  dirs = [];
 });
 
 function decode(text: string): any {
@@ -34,29 +34,48 @@ async function call(url: string, name: string, args: unknown): Promise<any> {
   return decode(await response.text());
 }
 
-describe('Qwen manual workspace integration', () => {
-  it('fails closed without a manual workspace, then reads only after explicit selection and records activity', async () => {
-    dir = await validateNewRoot(await fs.mkdtemp(path.join(os.tmpdir(), 'comgu-qwen-sec-')), []);
-    await fs.writeFile(path.join(dir, 'note.txt'), 'hello from qwen\n', 'utf8');
-    initConfigPath(dir);
+describe('Qwen enabled-folder integration', () => {
+  it('uses enabled roots directly without a chat workspace and denies a disabled approved root', async () => {
+    const allowedDir = await validateNewRoot(await fs.mkdtemp(path.join(os.tmpdir(), 'comgu-qwen-allowed-')), []);
+    const blockedDir = await validateNewRoot(await fs.mkdtemp(path.join(os.tmpdir(), 'comgu-qwen-blocked-')), [{ name: 'allowed', path: allowedDir }]);
+    dirs = [allowedDir, blockedDir];
+    await fs.writeFile(path.join(allowedDir, 'ok.txt'), 'allowed root\n', 'utf8');
+    await fs.writeFile(path.join(blockedDir, 'secret.txt'), 'blocked root\n', 'utf8');
+
+    initConfigPath(allowedDir);
     const cfg = defaultConfig();
-    const roots = [{ name: 'probe', path: dir }];
+    const approvedRoots = [
+      { name: 'allowed', path: allowedDir },
+      { name: 'blocked', path: blockedDir }
+    ];
+    let enabledRoots = [approvedRoots[0]!];
     const caps = { ...cfg.capabilities, read: true, browse: true, metadata: true };
-    await saveConfig({ ...cfg, roots, capabilities: caps, readOnly: false });
+    await saveConfig({ ...cfg, roots: approvedRoots, capabilities: caps, readOnly: false });
 
-    const endpoint = await startQwenLocalService(dir, () => ({ roots, caps, readOnly: false }));
-    const denied = await call(endpoint.url, 'read', { paths: ['/probe/note.txt'] });
-    expect(denied.result.isError).toBe(true);
-    expect(denied.result.content[0].text).toContain('WORKSPACE_SCOPE_REQUIRED');
-
-    setManualWorkspaceScope(roots, { primaryRoot: 'probe', sharedRoots: [] });
-    const allowed = await call(endpoint.url, 'read', { paths: ['/probe/note.txt'] });
+    const endpoint = await startQwenLocalService(allowedDir, () => ({ roots: enabledRoots, caps, readOnly: false }));
+    const allowed = await call(endpoint.url, 'read', { paths: ['/allowed/ok.txt'] });
     expect(allowed.result.isError).not.toBe(true);
-    expect(allowed.result.content[0].text).toContain('hello from qwen');
+    expect(allowed.result.content[0].text).toContain('allowed root');
+    expect(allowed.result.content[0].text).not.toContain('WORKSPACE_SCOPE_REQUIRED');
 
-    const records = await readRecentQwenActivity(2);
-    expect(records.map((record) => record.tool)).toEqual(['read', 'read']);
-    expect(records.some((record) => record.outcome === 'error')).toBe(true);
+    const command = await call(endpoint.url, 'exec_command', { cmd: 'Write-Output qwen-command-ok', workdir: '/allowed' });
+    expect(command.result.isError, JSON.stringify(command.result)).not.toBe(true);
+    expect(JSON.stringify(command.result)).toContain('qwen-command-ok');
+    expect(JSON.stringify(command.result)).not.toContain('WORKSPACE_SCOPE_REQUIRED');
+
+    const blocked = await call(endpoint.url, 'read', { paths: ['/blocked/secret.txt'] });
+    expect(blocked.result.isError).toBe(true);
+    expect(JSON.stringify(blocked.result)).not.toContain('blocked root');
+
+    enabledRoots = [];
+    const revoked = await call(endpoint.url, 'read', { paths: ['/allowed/ok.txt'] });
+    expect(revoked.result.isError).toBe(true);
+    expect(JSON.stringify(revoked.result)).not.toContain('allowed root');
+
+    const records = await readRecentQwenActivity(4);
+    expect(records.filter((record) => record.tool === 'read')).toHaveLength(3);
+    expect(records.some((record) => record.tool === 'exec_command')).toBe(true);
     expect(records.some((record) => record.outcome === 'ok')).toBe(true);
+    expect(records.some((record) => record.outcome === 'error')).toBe(true);
   });
 });

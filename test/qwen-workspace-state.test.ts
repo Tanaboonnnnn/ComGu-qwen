@@ -1,19 +1,19 @@
 ﻿import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { initQwenWorkspaceState, loadQwenWorkspaceSelection, saveQwenWorkspaceSelection } from '../src/main/qwen/workspace-state.js';
+import { initQwenWorkspaceState, loadQwenEnabledRoots, saveQwenEnabledRoots } from '../src/main/qwen/workspace-state.js';
 
 let dir = '';
 afterEach(async () => { if (dir) await fs.rm(dir, { recursive: true, force: true }); });
 
-describe('Qwen workspace selection persistence', () => {
-  it('defaults to no selection and persists only an approved root name', async () => {
+describe('Qwen enabled-folder persistence', () => {
+  it('defaults to no enabled folders and persists multiple approved root names', async () => {
     dir = await fs.mkdtemp(path.join(process.cwd(), '.qwen-state-'));
     initQwenWorkspaceState(dir);
-    expect(await loadQwenWorkspaceSelection()).toBeNull();
-    await saveQwenWorkspaceSelection('project');
-    expect(await loadQwenWorkspaceSelection()).toBe('project');
-    await saveQwenWorkspaceSelection(null);
-    expect(await loadQwenWorkspaceSelection()).toBeNull();
+    expect(await loadQwenEnabledRoots()).toEqual([]);
+    await saveQwenEnabledRoots(['project', 'shared', 'project', '']);
+    expect(await loadQwenEnabledRoots()).toEqual(['project', 'shared']);
+    await saveQwenEnabledRoots([]);
+    expect(await loadQwenEnabledRoots()).toEqual([]);
   });
 });

@@ -16,7 +16,7 @@ ComGu Qwen is a standalone local MCP desktop app for Qwen Studio. It exposes Com
 ## Connect Qwen Studio
 
 1. Open **ComGu Qwen**.
-2. Add an approved folder and click it to select the active workspace.
+2. Add folders, then tick every folder Qwen is allowed to use. You can enable multiple folders at once.
 3. Copy the **MCP endpoint** shown in the app.
 4. In Qwen Studio add an MCP server with:
    - **Name:** `ComGu Qwen`
@@ -27,7 +27,7 @@ ComGu Qwen is a standalone local MCP desktop app for Qwen Studio. It exposes Com
 
 The endpoint is bound to `127.0.0.1` and contains a new random secret path each time the app starts, so copy the current URL after a restart.
 
-## Permissions and workspace security
+## Permissions and folder security
 
 ComGu Qwen keeps four permission groups in the desktop app:
 
@@ -36,7 +36,7 @@ ComGu Qwen keeps four permission groups in the desktop app:
 - **See and use the desktop**
 - **Run programs**
 
-File and command tools fail closed until an approved workspace is selected. On Windows, commands use the MXC ProcessContainer confinement path inherited from ComGu; if the confinement backend is unavailable, sandboxed commands are refused rather than silently running unrestricted.
+File and command tools can access only folders whose checkboxes are enabled in ComGu Qwen. Unticking a folder revokes it immediately, and no per-chat workspace selection is required. On Windows, commands use the MXC ProcessContainer confinement path inherited from ComGu; if the confinement backend is unavailable, sandboxed commands are refused rather than silently running unrestricted.
 
 The activity log stores bounded tool summaries only. It does not store Qwen chat messages or transcripts.
 
@@ -58,4 +58,4 @@ release/ComGu-Qwen-Setup-x64.exe
 
 ## Current platform target
 
-v0.1.0 is packaged and smoke-tested on Windows x64. The MCP protocol and core file runtime remain portable, while desktop automation is Windows-only until another platform has a proven backend.
+v0.1.1 is packaged and smoke-tested on Windows x64. The MCP protocol and core file runtime remain portable, while desktop automation is Windows-only until another platform has a proven backend.
