@@ -36,4 +36,3 @@ describe('Qwen merged MCP server', () => {
     expect(names).not.toContain('agents');
   });
 });
-

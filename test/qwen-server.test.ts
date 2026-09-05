@@ -81,9 +81,3 @@ describe('Qwen Streamable HTTP endpoint', () => {
     expect(reply.status).toBe(405);
   });
 });
-
-
-
-
-
-

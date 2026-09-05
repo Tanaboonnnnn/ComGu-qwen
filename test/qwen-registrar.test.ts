@@ -68,4 +68,3 @@ describe('Qwen registrar', () => {
     expect((denied.content[0] as any).text).toContain('TOOL_DISABLED');
   });
 });
-
