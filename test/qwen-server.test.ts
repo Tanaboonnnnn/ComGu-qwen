@@ -1,7 +1,7 @@
-﻿import http from 'node:http';
+import http from 'node:http';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Capabilities } from '../src/shared/types.js';
-import { startQwenMcpServer, type QwenMcpEndpoint } from '../src/main/qwen/server.js';
+import { QWEN_MCP_PORT, startQwenMcpServer, type QwenMcpEndpoint } from '../src/main/qwen/server.js';
 
 const caps = {
   browse: true, search: true, read: true, metadata: true,
@@ -49,7 +49,7 @@ describe('Qwen Streamable HTTP endpoint', () => {
     endpoint = await startQwenMcpServer(() => ({
       roots: [], caps: { ...caps }, readOnly: false,
       sessionTools: true, agentTools: true
-    }));
+    }), { port: 0, token: 'test-qwen-token' });
   });
 
   afterEach(async () => {
@@ -57,7 +57,8 @@ describe('Qwen Streamable HTTP endpoint', () => {
   });
 
   it('binds to loopback with a secret Qwen path and lists no chat/agent tools', async () => {
-    expect(endpoint.url).toMatch(/^http:\/\/127\.0\.0\.1:\d+\/mcp\/qwen\/[A-Za-z0-9_-]+$/);
+    expect(QWEN_MCP_PORT).toBe(39090);
+    expect(endpoint.url).toBe(`http://127.0.0.1:${endpoint.port}/mcp/qwen/test-qwen-token`);
     const reply = await request(endpoint.url, 'POST', { jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} });
     expect(reply.status).toBe(200);
     const names = reply.body.result.tools.map((tool: any) => tool.name);
@@ -79,5 +80,11 @@ describe('Qwen Streamable HTTP endpoint', () => {
   it('does not require legacy SSE GET support', async () => {
     const reply = await request(endpoint.url, 'GET');
     expect(reply.status).toBe(405);
+  });
+
+  it('fails clearly instead of changing ports when the requested port is already in use', async () => {
+    await expect(startQwenMcpServer(() => ({
+      roots: [], caps: { ...caps }, readOnly: false
+    }), { port: endpoint.port, token: 'second-token' })).rejects.toThrow(/already in use/i);
   });
 });

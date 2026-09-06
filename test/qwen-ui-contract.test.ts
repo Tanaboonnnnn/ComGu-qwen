@@ -1,4 +1,4 @@
-﻿import { readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
@@ -8,7 +8,7 @@ describe('standalone Qwen renderer boundary', () => {
   it('exposes only named Qwen settings actions through preload', () => {
     const preload = readFileSync(path.join(root, 'src', 'preload', 'index.ts'), 'utf8');
     expect(preload).toContain("contextBridge.exposeInMainWorld('comguQwen'");
-    for (const name of ['getState', 'addRoot', 'removeRoot', 'setRootEnabled', 'setPermissionGroup', 'copyEndpoint']) {
+    for (const name of ['getState', 'addRoot', 'removeRoot', 'setRootEnabled', 'setPermissionGroup', 'copyEndpoint', 'onStateChanged']) {
       expect(preload).toContain(name);
     }
     expect(preload).not.toContain('selectRoot');
@@ -32,5 +32,29 @@ describe('standalone Qwen renderer boundary', () => {
     expect(html).toContain('Change files');
     expect(html).toContain('See and use the desktop');
     expect(html).toContain('Run programs');
+  });
+
+  it('renders ComGu-style live status and activity rows instead of raw JSON', () => {
+    const html = readFileSync(path.join(root, 'src', 'renderer', 'index.html'), 'utf8');
+    const renderer = readFileSync(path.join(root, 'src', 'renderer', 'main.ts'), 'utf8');
+    expect(html).toContain('id="live"');
+    expect(html).toContain('id="liveState"');
+    expect(html).toContain('id="liveNote"');
+    expect(html).toContain('class="activity-feed"');
+    expect(html).not.toContain('<pre id="activity"');
+    expect(renderer).toContain('formatBangkokTime');
+    expect(renderer).not.toContain('JSON.stringify(state.activity');
+  });
+
+  it('uses push updates without a periodic full-state polling loop', () => {
+    const renderer = readFileSync(path.join(root, 'src', 'renderer', 'main.ts'), 'utf8');
+    expect(renderer).not.toContain('setInterval(');
+    expect(renderer).toContain('onStateChanged(render)');
+  });
+
+  it('guards expensive roots and activity DOM rebuilds behind slice keys', () => {
+    const renderer = readFileSync(path.join(root, 'src', 'renderer', 'main.ts'), 'utf8');
+    expect(renderer).toContain('rootsRenderKey');
+    expect(renderer).toContain('activityRenderKey');
   });
 });

@@ -25,7 +25,7 @@ ComGu Qwen is a standalone local MCP desktop app for Qwen Studio. It exposes Com
    - **URL:** paste the endpoint from the app.
 5. Save and enable it.
 
-The endpoint is bound to `127.0.0.1` and contains a new random secret path each time the app starts, so copy the current URL after a restart.
+The endpoint is local-only and stable per computer: ComGu Qwen binds to `127.0.0.1:39090` and generates a persistent random secret token the first time it runs. Restarting the app or rebooting the computer keeps the same URL. If port `39090` is already in use, ComGu Qwen fails clearly instead of silently moving to another port.
 
 ## Permissions and folder security
 
@@ -38,7 +38,7 @@ ComGu Qwen keeps four permission groups in the desktop app:
 
 File and command tools can access only folders whose checkboxes are enabled in ComGu Qwen. Unticking a folder revokes it immediately, and no per-chat workspace selection is required. On Windows, commands use the MXC ProcessContainer confinement path inherited from ComGu; if the confinement backend is unavailable, sandboxed commands are refused rather than silently running unrestricted.
 
-The activity log stores bounded tool summaries only. It does not store Qwen chat messages or transcripts.
+The activity log stores bounded tool summaries only. It does not store Qwen chat messages or transcripts. The desktop status shows Ready / Working / Tool error, and activity timestamps are displayed in Thailand time (`Asia/Bangkok`, UTC+7).
 
 ## Development
 
@@ -58,4 +58,4 @@ release/ComGu-Qwen-Setup-x64.exe
 
 ## Current platform target
 
-v0.1.1 is packaged and smoke-tested on Windows x64. The MCP protocol and core file runtime remain portable, while desktop automation is Windows-only until another platform has a proven backend.
+v0.1.2 is packaged and smoke-tested on Windows x64. The MCP protocol and core file runtime remain portable, while desktop automation is Windows-only until another platform has a proven backend.

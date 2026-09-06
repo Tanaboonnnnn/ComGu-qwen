@@ -1,7 +1,8 @@
-﻿import type { McpServer } from '@modelcontextprotocol/server';
+import type { McpServer } from '@modelcontextprotocol/server';
 import type { SurfaceRegistrar, ToolContext, ToolResult } from '../mcp/kernel.js';
 import { fail } from '../mcp/kernel.js';
 import { appendQwenActivity } from './activity.js';
+import { beginQwenTool, finishQwenTool } from './status.js';
 
 const SENSITIVE_KEYS = new Set([
   'patch',
@@ -83,12 +84,15 @@ export function createQwenRegistrar(server: McpServer, ctx: ToolContext): Surfac
       names.push(name);
       server.registerTool(name, config, (async (args: never) => {
         const startedAt = Date.now();
+        const callId = beginQwenTool(name);
         try {
           const result = await handler(args);
           await record(name, args, result, startedAt, false);
+          finishQwenTool(callId, { outcome: result.isError ? 'error' : 'ok' });
           return result;
         } catch (error) {
           await record(name, args, null, startedAt, true);
+          finishQwenTool(callId, { outcome: 'error' });
           throw error;
         }
       }) as never);

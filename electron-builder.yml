@@ -1,4 +1,4 @@
-﻿appId: com.comgu.qwen
+appId: com.comgu.qwen
 productName: ComGu Qwen
 copyright: MIT licensed
 
@@ -20,6 +20,10 @@ asarUnpack:
   - '**/node_modules/tree-sitter-bash/**'
 
 compression: maximum
+
+electronLanguages:
+  - en-US
+  - th
 
 win:
   target: nsis

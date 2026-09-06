@@ -1,4 +1,4 @@
-﻿import { randomBytes, timingSafeEqual } from 'node:crypto';
+import { randomBytes, timingSafeEqual } from 'node:crypto';
 import http from 'node:http';
 import { createMcpHandler } from '@modelcontextprotocol/server';
 import { localhostHostValidation, localhostOriginValidation, toNodeHandler } from '@modelcontextprotocol/node';
@@ -6,6 +6,12 @@ import type { ToolContext } from '../mcp/kernel.js';
 import { buildQwenServer } from './tools.js';
 
 const MAX_BODY_BYTES = 8 * 1024 * 1024;
+export const QWEN_MCP_PORT = 39090;
+
+export interface QwenMcpServerOptions {
+  port?: number;
+  token?: string;
+}
 
 export interface QwenMcpEndpoint {
   port: number;
@@ -68,8 +74,13 @@ function readBoundedJsonBody(
   });
 }
 
-export async function startQwenMcpServer(getContext: () => ToolContext): Promise<QwenMcpEndpoint> {
-  const basePath = `/mcp/qwen/${randomBytes(32).toString('base64url')}`;
+export async function startQwenMcpServer(
+  getContext: () => ToolContext,
+  options: QwenMcpServerOptions = {}
+): Promise<QwenMcpEndpoint> {
+  const port = options.port ?? QWEN_MCP_PORT;
+  const token = options.token ?? randomBytes(32).toString('base64url');
+  const basePath = `/mcp/qwen/${token}`;
   let exposedCaps: ToolContext['caps'] | null = null;
   let exposedFind: boolean | null = null;
 
@@ -134,9 +145,16 @@ export async function startQwenMcpServer(getContext: () => ToolContext): Promise
   server.maxRequestsPerSocket = 0;
 
   await new Promise<void>((resolve, reject) => {
-    server.once('error', reject);
-    server.listen(0, '127.0.0.1', () => {
-      server.removeListener('error', reject);
+    const onError = (error: NodeJS.ErrnoException): void => {
+      if (error.code === 'EADDRINUSE' && port !== 0) {
+        reject(new Error(`ComGu Qwen local port ${port} is already in use. Close the other process or change the configured port.`));
+        return;
+      }
+      reject(error);
+    };
+    server.once('error', onError);
+    server.listen(port, '127.0.0.1', () => {
+      server.removeListener('error', onError);
       resolve();
     });
   });

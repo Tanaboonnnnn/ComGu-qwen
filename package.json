@@ -1,6 +1,6 @@
 {
   "name": "comgu-qwen",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "ComGu Qwen: local MCP tools for Qwen Studio.",
   "license": "MIT",
   "author": "ComGu Qwen",

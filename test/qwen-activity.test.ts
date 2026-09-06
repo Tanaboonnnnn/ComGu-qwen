@@ -55,4 +55,22 @@ describe('Qwen activity history', () => {
     expect(records[0]?.tool).toBe('exec_command');
     expect(records[0]?.outcome).toBe('error');
   });
+
+  it('serves recent activity from memory after the first load', async () => {
+    const dir = await tempStore();
+    const file = path.join(dir, 'qwen', 'activity.jsonl');
+    await fs.mkdir(path.dirname(file), { recursive: true });
+    await fs.writeFile(file, JSON.stringify({
+      time: '2026-09-06T00:00:00.000Z',
+      tool: 'read',
+      inputSummary: '/warm',
+      resultSummary: 'ok',
+      outcome: 'ok',
+      durationMs: 3
+    }) + '\n', 'utf8');
+
+    expect((await readRecentQwenActivity(10))[0]?.inputSummary).toBe('/warm');
+    await fs.rm(file);
+    expect((await readRecentQwenActivity(10))[0]?.inputSummary).toBe('/warm');
+  });
 });

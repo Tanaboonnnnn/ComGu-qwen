@@ -1,4 +1,4 @@
-﻿import { promises as fs } from 'node:fs';
+import { promises as fs } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -52,7 +52,7 @@ describe('Qwen enabled-folder integration', () => {
     const caps = { ...cfg.capabilities, read: true, browse: true, metadata: true };
     await saveConfig({ ...cfg, roots: approvedRoots, capabilities: caps, readOnly: false });
 
-    const endpoint = await startQwenLocalService(allowedDir, () => ({ roots: enabledRoots, caps, readOnly: false }));
+    const endpoint = await startQwenLocalService(allowedDir, () => ({ roots: enabledRoots, caps, readOnly: false }), { port: 0 });
     const allowed = await call(endpoint.url, 'read', { paths: ['/allowed/ok.txt'] });
     expect(allowed.result.isError).not.toBe(true);
     expect(allowed.result.content[0].text).toContain('allowed root');

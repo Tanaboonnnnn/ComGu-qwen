@@ -1,9 +1,10 @@
-﻿import path from 'node:path';
+import path from 'node:path';
 import { app, BrowserWindow, clipboard, dialog, ipcMain, session } from 'electron';
 import { effectiveCapabilities, getConfig, initConfigPath, loadConfig, updateConfig } from './config.js';
 import { readRecentQwenActivity } from './qwen/activity.js';
 import { qwenLocalUrl, startQwenLocalService, stopQwenLocalService } from './qwen/lifecycle.js';
 import { capabilityPatchForGroup, type QwenPermissionGroup } from './qwen/settings.js';
+import { onQwenRuntimeStatusChange, qwenRuntimeStatus } from './qwen/status.js';
 import {
   initQwenWorkspaceState,
   loadQwenEnabledRoots,
@@ -51,7 +52,8 @@ async function uiState() {
     roots: getConfig().roots.map((root) => ({ name: root.name, path: root.path })),
     enabledRoots: enabledRoots().map((root) => root.name),
     permissions: permissionGroups(),
-    activity: await readRecentQwenActivity(30)
+    activity: await readRecentQwenActivity(30),
+    runtime: qwenRuntimeStatus()
   };
 }
 
@@ -74,6 +76,15 @@ function isPermissionGroup(value: unknown): value is QwenPermissionGroup {
 }
 
 function registerIpc(): void {
+  let pushGeneration = 0;
+  const pushState = (): void => {
+    const generation = ++pushGeneration;
+    void uiState().then((state) => {
+      if (generation !== pushGeneration || !window || window.isDestroyed()) return;
+      window.webContents.send('qwen:stateChanged', state);
+    });
+  };
+  onQwenRuntimeStatusChange(pushState);
   ipcMain.handle('qwen:getState', () => uiState());
   ipcMain.handle('qwen:addRoot', async () => {
     if (!window) throw new Error('No window.');

@@ -1,5 +1,5 @@
-﻿<!doctype html>
-<html lang="en">
+<!doctype html>
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -7,32 +7,41 @@
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <main class="shell">
-    <header><div><h1>ComGu Qwen</h1><p>Local MCP tools for Qwen Studio</p></div><span class="pill">StreamableHTTP</span></header>
-    <section class="card">
-      <h2>MCP endpoint</h2>
-      <div class="endpoint"><code id="endpoint">Starting…</code><button id="copyEndpoint">Copy</button></div>
-      <p class="hint">Qwen Studio: Name <b>ComGu Qwen</b> · Type <b>StreamableHTTP</b> · paste this URL.</p>
-    </section>
-    <section class="card">
-      <div class="section-head"><div><h2>Folders Qwen can use</h2><p class="hint">Tick each folder Qwen is allowed to use. You can enable more than one.</p></div><button id="addRoot">Add folder</button></div>
-      <div id="roots" class="roots"></div>
-      <p id="noRoots" class="empty">No folders added yet. Add a folder, then tick it to allow Qwen access.</p>
-    </section>
-    <section class="card">
-      <h2>Permissions</h2>
-      <div class="permissions">
-        <label><span><b>Look at files</b><small>Read files, images and folder metadata</small></span><input type="checkbox" data-group="look" /></label>
-        <label><span><b>Change files</b><small>Create, edit, move and delete files</small></span><input type="checkbox" data-group="change" /></label>
-        <label><span><b>See and use the desktop</b><small>Windows screen, UI Automation, mouse, keyboard and clipboard</small></span><input type="checkbox" data-group="desktop" /></label>
-        <label><span><b>Run programs</b><small>Run commands inside the folders you enabled above</small></span><input type="checkbox" data-group="run" /></label>
+  <div class="app">
+    <header>
+      <span class="mark"><img src="./comgu-logo.jpg" alt="" /></span>
+      <span class="title">ComGu Qwen<span>Local MCP for Qwen Studio</span></span>
+      <span class="live" id="live"><span class="dot"></span><span id="liveState">Starting</span><em id="liveNote"></em></span>
+      <span class="pill">StreamableHTTP</span>
+    </header>
+    <main class="shell">
+      <section class="card endpoint-card">
+        <h2>MCP endpoint <span class="tag">Local only</span></h2>
+        <div class="endpoint"><code id="endpoint">Starting…</code><button id="copyEndpoint">Copy</button></div>
+        <p class="hint">Qwen Studio · Name <b>ComGu Qwen</b> · Type <b>StreamableHTTP</b>. This address stays the same on this computer.</p>
+      </section>
+      <div class="grid">
+        <section class="card">
+          <div class="section-head"><div><h2>Folders Qwen can use</h2><p class="hint">Tick each folder Qwen is allowed to use. Only ticked folders enter Qwen's authority.</p></div><button id="addRoot">Add folder</button></div>
+          <div id="roots" class="roots"></div>
+          <p id="noRoots" class="empty">No folders added yet.</p>
+        </section>
+        <section class="card">
+          <h2>Permissions</h2>
+          <div class="permissions">
+            <label><span><b>Look at files</b><small>Read files, images and folder metadata</small></span><span class="sw"><input type="checkbox" data-group="look" /><i></i></span></label>
+            <label><span><b>Change files</b><small>Create, edit, move and delete files</small></span><span class="sw"><input type="checkbox" data-group="change" /><i></i></span></label>
+            <label><span><b>See and use the desktop</b><small>Screen, UI Automation, mouse, keyboard and clipboard</small></span><span class="sw"><input type="checkbox" data-group="desktop" /><i></i></span></label>
+            <label><span><b>Run programs</b><small>Commands stay under enabled folder authority</small></span><span class="sw"><input type="checkbox" data-group="run" /><i></i></span></label>
+          </div>
+        </section>
       </div>
-    </section>
-    <section class="card">
-      <h2>Recent activity</h2>
-      <pre id="activity">No activity yet.</pre>
-    </section>
-  </main>
+      <section class="card activity-card">
+        <h2>Activity <span class="hint">เวลาไทย · Asia/Bangkok</span></h2>
+        <div id="activity" class="activity-feed"><p class="empty">No activity yet.</p></div>
+      </section>
+    </main>
+  </div>
   <script type="module" src="./main.ts"></script>
 </body>
 </html>
